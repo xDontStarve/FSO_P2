@@ -156,9 +156,10 @@ void carrega_parametres(const char *nom_fit)
 
   
   do {
-    if (!feof(fit)) break;
+    if (feof(fit)) break;
     
     fscanf(fit,"%d %d %d %f\n",&fantasmes[num_fantasma-1].f,&fantasmes[num_fantasma-1].c,&fantasmes[num_fantasma-1].d,&fantasmes[num_fantasma-1].r);
+    fprintf(stderr, "%d %d %d %f\n",fantasmes[num_fantasma-1].f,fantasmes[num_fantasma-1].c,fantasmes[num_fantasma-1].d,fantasmes[num_fantasma-1].r);
     if ((fantasmes[num_fantasma-1].f < 1) || (fantasmes[num_fantasma-1].f > n_fil1-3) ||
 	      (fantasmes[num_fantasma-1].c < 1) || (fantasmes[num_fantasma-1].c > n_col-2) ||
 	      (fantasmes[num_fantasma-1].d < 0) || (fantasmes[num_fantasma-1].d > 3))
@@ -196,21 +197,21 @@ void inicialitza_joc(void)
     {
       for (int k=0; k<num_fantasma; k++){
         fantasmes[k].a = win_quincar(fantasmes[k].f,fantasmes[k].c);
+        fprintf(stderr, "%c", fantasmes[k].a);
+        win_retard(9000);
         if (fantasmes[k].a == c_req) r = -7;	/* error: fantasma sobre pared */
         else
         {
-          cocos = 0;			/* compta el numero total de cocos */
+          win_escricar(fantasmes[k].f,fantasmes[k].c,k+1,NO_INV);
+        }
+      }
+      cocos = 0;			/* compta el numero total de cocos */
           for (i=0; i<n_fil1-1; i++)
             for (j=0; j<n_col; j++)
               if (win_quincar(i,j)=='.') cocos++;
-        
-          win_escricar(mc.f,mc.c,'0',NO_INV);
-          win_escricar(fantasmes[k].f,fantasmes[k].c,'1',NO_INV);
-
-          if (mc.a == '.') cocos--;	/* menja primer coco */
+      win_escricar(mc.f,mc.c,'0',NO_INV);
+      if (mc.a == '.') cocos--;	/* menja primer coco */
           sprintf(strin,"Cocos: %d", cocos); win_escristr(strin);
-        }
-      }
     }
   }
   if (r != 0)
