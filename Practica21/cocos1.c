@@ -122,57 +122,57 @@ void carrega_parametres(const char *nom_fit)
 
   if (!feof(fit)) fscanf(fit,"%d %d %s %c\n",&n_fil1,&n_col,tauler,&c_req);
   else {
-	fprintf(stderr,"Falten parametres al fitxer \'%s\'\n",nom_fit);
-	fclose(fit);
-	exit(2);
+    fprintf(stderr,"Falten parametres al fitxer \'%s\'\n",nom_fit);
+    fclose(fit);
+    exit(2);
 	}
   if ((n_fil1 < MIN_FIL) || (n_fil1 > MAX_FIL) ||
 	(n_col < MIN_COL) || (n_col > MAX_COL))
   {
-	fprintf(stderr,"Error: dimensions del camp de joc incorrectes:\n");
-	fprintf(stderr,"\t%d =< n_fil1 (%d) =< %d\n",MIN_FIL,n_fil1,MAX_FIL);
-	fprintf(stderr,"\t%d =< n_col (%d) =< %d\n",MIN_COL,n_col,MAX_COL);
-	fclose(fit);
-	exit(3);
+    fprintf(stderr,"Error: dimensions del camp de joc incorrectes:\n");
+    fprintf(stderr,"\t%d =< n_fil1 (%d) =< %d\n",MIN_FIL,n_fil1,MAX_FIL);
+    fprintf(stderr,"\t%d =< n_col (%d) =< %d\n",MIN_COL,n_col,MAX_COL);
+    fclose(fit);
+    exit(3);
   }
 
   if (!feof(fit)) fscanf(fit,"%d %d %d %f\n",&mc.f,&mc.c,&mc.d,&mc.r);
   else {
-	fprintf(stderr,"Falten parametres al fitxer \'%s\'\n",nom_fit);
-	fclose(fit);
-	exit(2);
+    fprintf(stderr,"Falten parametres al fitxer \'%s\'\n",nom_fit);
+    fclose(fit);
+    exit(2);
 	}
   if ((mc.f < 1) || (mc.f > n_fil1-3) ||
-	(mc.c < 1) || (mc.c > n_col-2) ||
-	(mc.d < 0) || (mc.d > 3))
+    (mc.c < 1) || (mc.c > n_col-2) ||
+    (mc.d < 0) || (mc.d > 3))
   {
-	fprintf(stderr,"Error: parametres menjacocos incorrectes:\n");
-	fprintf(stderr,"\t1 =< mc.f (%d) =< n_fil1-3 (%d)\n",mc.f,(n_fil1-3));
-	fprintf(stderr,"\t1 =< mc.c (%d) =< n_col-2 (%d)\n",mc.c,(n_col-2));
-	fprintf(stderr,"\t0 =< mc.d (%d) =< 3\n",mc.d);
-	fclose(fit);
-	exit(4);
+    fprintf(stderr,"Error: parametres menjacocos incorrectes:\n");
+    fprintf(stderr,"\t1 =< mc.f (%d) =< n_fil1-3 (%d)\n",mc.f,(n_fil1-3));
+    fprintf(stderr,"\t1 =< mc.c (%d) =< n_col-2 (%d)\n",mc.c,(n_col-2));
+    fprintf(stderr,"\t0 =< mc.d (%d) =< 3\n",mc.d);
+    fclose(fit);
+    exit(4);
   }
 
   
   do {
     if (feof(fit)) break;
     
-    fscanf(fit,"%d %d %d %f\n",&fantasmes[num_fantasma-1].f,&fantasmes[num_fantasma-1].c,&fantasmes[num_fantasma-1].d,&fantasmes[num_fantasma-1].r);
-    fprintf(stderr, "%d %d %d %f\n",fantasmes[num_fantasma-1].f,fantasmes[num_fantasma-1].c,fantasmes[num_fantasma-1].d,fantasmes[num_fantasma-1].r);
-    if ((fantasmes[num_fantasma-1].f < 1) || (fantasmes[num_fantasma-1].f > n_fil1-3) ||
-	      (fantasmes[num_fantasma-1].c < 1) || (fantasmes[num_fantasma-1].c > n_col-2) ||
-	      (fantasmes[num_fantasma-1].d < 0) || (fantasmes[num_fantasma-1].d > 3))
+    fscanf(fit,"%d %d %d %f\n",&fantasmes[num_fantasma].f,&fantasmes[num_fantasma].c,&fantasmes[num_fantasma].d,&fantasmes[num_fantasma].r);
+    fprintf(stderr, "%d %d %d %f\n",fantasmes[num_fantasma].f,fantasmes[num_fantasma].c,fantasmes[num_fantasma].d,fantasmes[num_fantasma].r);
+    if ((fantasmes[num_fantasma].f < 1) || (fantasmes[num_fantasma].f > n_fil1-3) ||
+	      (fantasmes[num_fantasma].c < 1) || (fantasmes[num_fantasma].c > n_col-2) ||
+	      (fantasmes[num_fantasma].d < 0) || (fantasmes[num_fantasma].d > 3))
     {
 	    fprintf(stderr,"Error: parametres fantasma %d incorrectes:\n", num_fantasma);
-	    fprintf(stderr,"\t1 =< fantasmes.f (%d) =< n_fil1-3 (%d)\n",fantasmes[num_fantasma-1].f,(n_fil1-3));
-	    fprintf(stderr,"\t1 =< fantasmes.c (%d) =< n_col-2 (%d)\n",fantasmes[num_fantasma-1].c,(n_col-2));
-	    fprintf(stderr,"\t0 =< fantasmes.d (%d) =< 3\n",fantasmes[num_fantasma-1].d);
+	    fprintf(stderr,"\t1 =< fantasmes.f (%d) =< n_fil1-3 (%d)\n",fantasmes[num_fantasma].f,(n_fil1-3));
+	    fprintf(stderr,"\t1 =< fantasmes.c (%d) =< n_col-2 (%d)\n",fantasmes[num_fantasma].c,(n_col-2));
+	    fprintf(stderr,"\t0 =< fantasmes.d (%d) =< 3\n",fantasmes[num_fantasma].d);
 	    fclose(fit);
 	    exit(5);
     }
     num_fantasma++;
-  } while (num_fantasma <= 9);
+  } while (num_fantasma < 9);
 
   fclose(fit);			/* fitxer carregat: tot OK! */
   printf("Joc del MenjaCocos\n\tTecles: \'%c\', \'%c\', \'%c\', \'%c\', RETURN-> sortir\n",
@@ -192,41 +192,53 @@ void inicialitza_joc(void)
   if (r == 0)
   {
     mc.a = win_quincar(mc.f,mc.c);
-    if (mc.a == c_req) r = -6;		/* error: menjacocos sobre pared */
-    else
+    if (mc.a == c_req) 
     {
+      r = -6;		/* error: menjacocos sobre pared */
+    } else 
+    {
+      
+      /* compta el numero total de cocos */
+      cocos = 0;
+      for (i=0; i<n_fil1-1; i++)
+        for (j=0; j<n_col; j++)
+          if (win_quincar(i,j)=='.') cocos++;
+
+      // Escriure ComeCocos
+      win_escricar(mc.f,mc.c,'0',NO_INV);
+
+      // Menja primer coco
+      if (mc.a == '.')
+        cocos--;
+      
+      // Escriure marcador de cocos
+      sprintf(strin,"Cocos: %d", cocos); win_escristr(strin);
+
       for (int k=0; k<num_fantasma; k++){
         fantasmes[k].a = win_quincar(fantasmes[k].f,fantasmes[k].c);
-        fprintf(stderr, "%c", fantasmes[k].a);
-        win_retard(9000);
-        if (fantasmes[k].a == c_req) r = -7;	/* error: fantasma sobre pared */
-        else
+        if (fantasmes[k].a == c_req){
+          r = -7;	/* error: fantasma sobre pared */
+        } else 
         {
-          win_escricar(fantasmes[k].f,fantasmes[k].c,k+1,NO_INV);
+          win_escricar(fantasmes[k].f,fantasmes[k].c,'1'+k,NO_INV); //Escriure fantasmes 
         }
       }
-      cocos = 0;			/* compta el numero total de cocos */
-          for (i=0; i<n_fil1-1; i++)
-            for (j=0; j<n_col; j++)
-              if (win_quincar(i,j)=='.') cocos++;
-      win_escricar(mc.f,mc.c,'0',NO_INV);
-      if (mc.a == '.') cocos--;	/* menja primer coco */
-          sprintf(strin,"Cocos: %d", cocos); win_escristr(strin);
+
     }
   }
   if (r != 0)
   {	win_fi();
-	fprintf(stderr,"Error: no s'ha pogut inicialitzar el joc:\n");
-	switch (r)
-	{ case -1: fprintf(stderr,"  nom de fitxer erroni\n"); break;
-	  case -2: fprintf(stderr,"  numero de columnes d'alguna fila no coincideix amb l'amplada del tauler de joc\n"); break;
-	  case -3: fprintf(stderr,"  numero de columnes del laberint incorrecte\n"); break;
-	  case -4: fprintf(stderr,"  numero de files del laberint incorrecte\n"); break;
-	  case -5: fprintf(stderr,"  finestra de camp de joc no oberta\n"); break;
-	  case -6: fprintf(stderr,"  posicio inicial del menjacocos damunt la pared del laberint\n"); break;
-	  case -7: fprintf(stderr,"  posicio inicial del fantasma damunt la pared del laberint\n"); break;
-	}
-	exit(7);
+    fprintf(stderr,"Error: no s'ha pogut inicialitzar el joc:\n");
+    switch (r)
+    { case -1: fprintf(stderr,"  nom de fitxer erroni\n"); break;
+      case -2: fprintf(stderr,"  numero de columnes d'alguna fila no coincideix amb l'amplada del tauler de joc\n"); break;
+      case -3: fprintf(stderr,"  numero de columnes del laberint incorrecte\n"); break;
+      case -4: fprintf(stderr,"  numero de files del laberint incorrecte\n"); break;
+      case -5: fprintf(stderr,"  finestra de camp de joc no oberta\n"); break;
+      case -6: fprintf(stderr,"  posicio inicial del menjacocos damunt la pared del laberint\n"); break;
+      case -7: fprintf(stderr,"  posicio inicial del fantasma damunt la pared del laberint\n"); break;
+    }
+    exit(7);
   }
 }
 
@@ -240,7 +252,7 @@ void* mou_fantasma(void * args)
   do {
     objecte seg;
     int k, vk, nd, vd[3];
-    int index = *((int *)args);
+    long index = (long) args;
     nd = 0;
 
     for (k=-1; k<=1; k++)		/* provar direccio actual i dir. veines */
@@ -266,9 +278,12 @@ void* mou_fantasma(void * args)
       else				/* altrament */
         fantasmes[index].d = vd[rand() % nd];		/* segueix una dir. aleatoria */
 
-      seg.f = fantasmes[index].f + df[fantasmes[index].d];  /* calcular seguent posicio final */
+      /* calcular seguent posicio final */
+      seg.f = fantasmes[index].f + df[fantasmes[index].d];
       seg.c = fantasmes[index].c + dc[fantasmes[index].d];
-      seg.a = win_quincar(seg.f,seg.c);	/* calcular caracter seguent posicio */
+
+      /* calcular caracter seguent posicio */
+      seg.a = win_quincar(seg.f,seg.c);	
 
       /* esborra posicio anterior */
       win_escricar(fantasmes[index].f,fantasmes[index].c,fantasmes[index].a,NO_INV);
@@ -279,7 +294,7 @@ void* mou_fantasma(void * args)
       fantasmes[index].a = seg.a;
 
       /* redibuixa fantasma */
-      win_escricar(fantasmes[index].f,fantasmes[index].c,'1',NO_INV);
+      win_escricar(fantasmes[index].f,fantasmes[index].c,'1'+index,NO_INV);
       
       /* ha capturat menjacocos */
       if (fantasmes[index].a == '0') fi2 = 1;
@@ -341,7 +356,7 @@ int main(int n_args, const char *ll_args[])
   srand(getpid());		/* inicialitza numeros aleatoris */
 
   if ((n_args != 2) && (n_args !=3))
-  {	fprintf(stderr,"Comanda: cocos0 fit_param [retard]\n");
+  {	fprintf(stderr,"Comanda: %s fit_param [retard]\n", ll_args[0]);
   	exit(1);
   }
   carrega_parametres(ll_args[1]);
@@ -356,10 +371,9 @@ int main(int n_args, const char *ll_args[])
     // crear el hilo del comecocos
     pthread_create(&threads[0], NULL, mou_menjacocos, NULL);
     // crear un hilo por cada fantasma
-    for (int i = 0; i < num_fantasma; i++) 
+    for (long i = 0; i < num_fantasma; i++) 
     {
-      int args[1] = {i};
-      pthread_create(&threads[i], NULL, mou_fantasma, args);
+      pthread_create(&threads[i+1], NULL, mou_fantasma, (void *) i);
     }
     // Esperar a que finalizen los hilos
     for (int i = 0; i <= num_fantasma; i++) 

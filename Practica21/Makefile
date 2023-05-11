@@ -3,7 +3,7 @@ cocos0 : cocos0.c winsuport.o winsuport.h
 
 
 cocos1 : cocos1.c winsuport.o winsuport.h
-	gcc -Wall cocos1.c winsuport.o -o cocos1 -lcurses -lpthread
+	gcc -g -Wall cocos1.c winsuport.o -o cocos1 -lcurses -lpthread
 
 
 cocos2 : cocos2.c winsuport.o winsuport.h
