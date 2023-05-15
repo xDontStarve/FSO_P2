@@ -10,8 +10,21 @@ cocos2 : cocos2.c winsuport.o winsuport.h
 	gcc -Wall cocos2.c winsuport.o -o cocos2 -lcurses -lpthread
 
 
+cocos3 : fantasma3.c winsuport.o winsuport.h
+	gcc -Wall cocos3.c winsuport.o -o cocos3 -lcurses -lpthread
+
+
+fantasma3 : fantasma3.c winsuport2.o winsuport2.h
+	gcc -Wall fantasma3.c winsuport2.o -o fantasma3 -lcurses -lpthread
+
+
 winsuport.o : winsuport.c winsuport.h
 	gcc -Wall -c winsuport.c -o winsuport.o 
+
+
+winsuport2.o : winsuport.c winsuport.h
+	gcc -Wall -c winsuport2.c -o winsuport2.o 
+
 
 clean:
 	rm -f cocos0 cocos1 cocos2 winsuport.o
