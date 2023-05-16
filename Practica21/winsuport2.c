@@ -33,8 +33,10 @@ int win_ini(int *fil, int *col, char creq, unsigned int inv)
   int ufil,ucol,p_fil,p_col;
   chtype wc;
 
-  if (hi_ha_win) return(-1);	/* error si ja s'havia creat la finestra */
-  if (initscr() == NULL) return(-2);	/* error en iniciar les curses */
+  if (hi_ha_win) 
+    return(-1);	/* error si ja s'havia creat la finestra */
+  if (initscr() == NULL) 
+    return(-2);	/* error en iniciar les curses */
   if ((*fil > LINES) || (*col > COLS))    /* error en les mides */
   { endwin();
     return(-3);
@@ -94,7 +96,7 @@ void win_set(void *p_mem, int n_fil, int n_col)
 /*	a la funcio win_ini(), tot i que s'emmagatzemen a les		*/
 /*	variables globals Nfil,Ncol: aquestes variables s'inicialitzen	*/
 /*	a la crida win_ini() que fa el proces pare i, per tant, el seu	*/
-/*	valor NO es traspassa als processos fill. Per aix˜, els		*/
+/*	valor NO es traspassa als processos fill. Per aixï¿½, els		*/
 /*	processos fill hauran d'invocar la win_set() especificant num.	*/
 /*	de files i de columnes del camp de joc (que poden rebre a	*/
 /*	traves d'arguments de programa), per tal que la copia de Nfil i	*/

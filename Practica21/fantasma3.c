@@ -13,7 +13,7 @@ int main(int argc, char *argv[])
   int *ptr_fi1 = (int *)(ptr_shmem + OFFSET_FI1);
   int *ptr_fi2 = (int *)(ptr_shmem + OFFSET_FI2);
   int *ptr_retard = (int *)(ptr_shmem + OFFSET_RETARD);
-  objecte ptr_fantasmes[9] = (objecte *)(ptr_shmem + OFFSET_FANTASMES);
+  objecte *ptr_fantasmes = (objecte *)(ptr_shmem + OFFSET_FANTASMES);
 
   do {
     objecte seg;

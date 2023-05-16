@@ -89,10 +89,9 @@ int num_fantasma = 0;
 int cocos;			/* numero restant de cocos per menjar */
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
-// Variables compartidas
-objecte fantasmes[9];			    /* informacio dels fantasmes */
-int fi1, fi2;                 /* finalitzacio del joc*/
-int retard;		                /* valor del retard de moviment, en mil.lisegons */
+void * ptr_shmem;
+int *ptr_retard;
+objecte *ptr_fantasmes;
 
 /* funcio per realitzar la carrega dels parametres de joc emmagatzemats */
 /* dins d'un fitxer de text, el nom del qual es passa per referencia a  */
@@ -102,6 +101,7 @@ int retard;		                /* valor del retard de moviment, en mil.lisegons */
 void carrega_parametres(const char *nom_fit)
 {
   FILE *fit;
+  objecte *fantasma = ptr_shmem;
 
   fit = fopen(nom_fit,"rt");		/* intenta obrir fitxer */
   if (fit == NULL)
@@ -146,21 +146,23 @@ void carrega_parametres(const char *nom_fit)
   
   do {
     if (feof(fit)) break;
-    
-    fscanf(fit,"%d %d %d %f\n",&fantasmes[num_fantasma].f,&fantasmes[num_fantasma].c,&fantasmes[num_fantasma].d,&fantasmes[num_fantasma].r);
-    fprintf(stderr, "%d %d %d %f\n",fantasmes[num_fantasma].f,fantasmes[num_fantasma].c,fantasmes[num_fantasma].d,fantasmes[num_fantasma].r);
-    if ((fantasmes[num_fantasma].f < 1) || (fantasmes[num_fantasma].f > n_fil1-3) ||
-	      (fantasmes[num_fantasma].c < 1) || (fantasmes[num_fantasma].c > n_col-2) ||
-	      (fantasmes[num_fantasma].d < 0) || (fantasmes[num_fantasma].d > 3))
+
+    fscanf(fit,"%d %d %d %f\n",&fantasma->f,&fantasma->c,&fantasma->d,&fantasma->r);
+    fprintf(stderr, "%d %d %d %f\n",fantasma->f,fantasma->c,fantasma->d,fantasma->r);
+    if ((fantasma->f < 1) || (fantasma->f > n_fil1-3) ||
+	      (fantasma->c < 1) || (fantasma->c > n_col-2) ||
+	      (fantasma->d < 0) || (fantasma->d > 3))
     {
 	    fprintf(stderr,"Error: parametres fantasma %d incorrectes:\n", num_fantasma);
-	    fprintf(stderr,"\t1 =< fantasmes.f (%d) =< n_fil1-3 (%d)\n",fantasmes[num_fantasma].f,(n_fil1-3));
-	    fprintf(stderr,"\t1 =< fantasmes.c (%d) =< n_col-2 (%d)\n",fantasmes[num_fantasma].c,(n_col-2));
-	    fprintf(stderr,"\t0 =< fantasmes.d (%d) =< 3\n",fantasmes[num_fantasma].d);
+	    fprintf(stderr,"\t1 =< fantasmes.f (%d) =< n_fil1-3 (%d)\n",fantasma->f,(n_fil1-3));
+	    fprintf(stderr,"\t1 =< fantasmes.c (%d) =< n_col-2 (%d)\n",fantasma->c,(n_col-2));
+	    fprintf(stderr,"\t0 =< fantasmes.d (%d) =< 3\n",fantasma->d);
 	    fclose(fit);
 	    exit(5);
     }
     num_fantasma++;
+    // Posicion del siguiente fantasma
+    fantasma++;
   } while (num_fantasma < 9);
 
   fclose(fit);			/* fitxer carregat: tot OK! */
@@ -176,6 +178,7 @@ void inicialitza_joc(void)
 {
   int r,i,j;
   char strin[12];
+  objecte *fantasma = ptr_shmem;
 
   r = win_carregatauler(tauler,n_fil1-1,n_col,c_req);
   if (r == 0)
@@ -204,13 +207,15 @@ void inicialitza_joc(void)
       sprintf(strin,"Cocos: %d", cocos); win_escristr(strin);
 
       for (int k=0; k<num_fantasma; k++){
-        fantasmes[k].a = win_quincar(fantasmes[k].f,fantasmes[k].c);
-        if (fantasmes[k].a == c_req){
+        fantasma->a = win_quincar(fantasma->f,fantasma->c);
+        if (fantasma->a == c_req){
           r = -7;	/* error: fantasma sobre pared */
         } else 
         {
-          win_escricar(fantasmes[k].f,fantasmes[k].c,'1'+k,NO_INV); //Escriure fantasmes 
+          win_escricar(fantasma->f,fantasma->c,'1'+k,NO_INV); //Escriure fantasmes 
         }
+        num_fantasma++;
+        fantasma++;
       }
 
     }
@@ -236,6 +241,9 @@ void inicialitza_joc(void)
 /* els cocos, i 0 altrament */
 void* mou_menjacocos(void * null)
 {
+  int *ptr_fi1 = (int *)(ptr_shmem + OFFSET_FI1);
+  int *ptr_fi2 = (int *)(ptr_shmem + OFFSET_FI2);
+  
   do {
     char strin[12];
     objecte seg;
@@ -249,7 +257,7 @@ void* mou_menjacocos(void * null)
         case TEC_ESQUER:  mc.d = 1; break;
         case TEC_AVALL:	  mc.d = 2; break;
         case TEC_DRETA:	  mc.d = 3; break;
-        case TEC_RETURN:  fi1 = 1; break;
+        case TEC_RETURN:  *ptr_fi1 = 1; break;
       }
     }
     seg.f = mc.f + df[mc.d];	/* calcular seguent posicio */
@@ -258,7 +266,6 @@ void* mou_menjacocos(void * null)
     if ((seg.a == ' ') || (seg.a == '.'))
     {
       // esborra posicio anterior
-      pthread_mutex_lock(&mutex);
       win_escricar(mc.f,mc.c,' ',NO_INV);
       
       // actualitza posicio
@@ -266,42 +273,46 @@ void* mou_menjacocos(void * null)
 
       // redibuixa menjacocos
       win_escricar(mc.f,mc.c,'0',NO_INV);
-      pthread_mutex_unlock(&mutex);
+
 
       if (seg.a == '.')
       {
         cocos--;
         sprintf(strin,"Cocos: %d", cocos);
         win_escristr(strin);
-        if (cocos == 0) fi1 = 1;
+        if (cocos == 0) *ptr_fi1 = 1;
       }
     }
-    win_retard(retard);
-  } while(!fi1 && !fi2);
+    win_retard(*ptr_retard);
+  } while(!*ptr_fi1 && !*ptr_fi2);
   
-  return(0);
+  return((void *)((long)*ptr_fi1));
 }
 
 /*            programa principal				    */
 int main(int n_args, const char *ll_args[])
 {
-  int rc;		/* variables locals */
+  /* variables locals */
+  int rc;		
   pthread_t thread;
   pid_t fantasmes_id[9];
   srand(getpid());		/* inicialitza numeros aleatoris */
-  char* str_ptr_shmem;
+  char str_ptr_shmem[50];
 
+  // Inicializar la memoria compartida
   int id_shmem = ini_mem(3*sizeof(int) + 9*sizeof(objecte));
-  // int fi1, fi2;                 /* finalitzacio del joc*/
-  // int retard;		                /* valor del retard de moviment, en mil.lisegons */
-  // objecte fantasmes[9];			    /* informacio dels fantasmes */
-  void * ptr_shmem = map_mem(id_shmem);
-  int *ptr_fi1 = (int *)(ptr_shmem + OFFSET_FI1);
-  int *ptr_fi2 = (int *)(ptr_shmem + OFFSET_FI2);
-  int *ptr_retard = (int *)(ptr_shmem + OFFSET_RETARD);
-  objecte *ptr_fantasmes[9] = (objecte *)(ptr_shmem + OFFSET_FANTASMES);
+  ptr_shmem = map_mem(id_shmem);
+  if (ptr_shmem == NULL)
+  {
+    fprintf(stderr, "ERROR: Ptr to shared memory invalid");
+    return 1;
+  }
+
+  ptr_retard = (int *)(ptr_shmem + OFFSET_RETARD);
+  ptr_fantasmes = (objecte *)(ptr_shmem + OFFSET_FANTASMES);
+
   // El puntero a la memoria compartida como argumento de 'fantasmes'
-  sprintf(str_ptr_shmem, "%d", (int)ptr_shmem);
+  sprintf(str_ptr_shmem, "%ld", (long)((int *)ptr_shmem));
 
   if ((n_args != 2) && (n_args !=3))
   {	fprintf(stderr,"Comanda: %s fit_param [retard]\n", ll_args[0]);
@@ -309,18 +320,18 @@ int main(int n_args, const char *ll_args[])
   }
   carrega_parametres(ll_args[1]);
 
-  if (n_args == 3) retard = atoi(ll_args[2]);
-  else retard = 100;
+  if (n_args == 3) *ptr_retard = atoi(ll_args[2]);
+  else *ptr_retard = 100;
 
   rc = win_ini(&n_fil1,&n_col,'+',INVERS);	/* intenta crear taulell */
-  if (rc == 0)		/* si aconsegueix accedir a l'entorn CURSES */
+  if (rc > 0)		/* si aconsegueix accedir a l'entorn CURSES */
   {
     inicialitza_joc();
     // Crear el hilo del comecocos
     pthread_create(&thread, NULL, mou_menjacocos, NULL);
     // Crear un proceso por cada fantasma
     char a1[20];
-    for (char i = 0; i < num_fantasma; i++) 
+    for (int i = 0; i < num_fantasma; i++) 
     {
       sprintf(a1, "%d", i);
       fantasmes_id[i] = fork();
@@ -329,13 +340,17 @@ int main(int n_args, const char *ll_args[])
       }
     }
     // Esperar a que finalizen los hilos
-    pthread_join(thread, NULL);
+    int fi1 = pthread_join(thread, NULL);
     
     win_fi();
 
-    if (fi1 == -1) printf("S'ha aturat el joc amb tecla RETURN!\n");
-    else { if (fi1) printf("Ha guanyat l'usuari!\n");
-	     else printf("Ha guanyat l'ordinador!\n"); }
+    if (fi1 < 0) 
+      printf("S'ha aturat el joc amb tecla RETURN!\n");
+    else if (fi1)
+      printf("Ha guanyat l'usuari!\n");
+    else
+      printf("Ha guanyat l'ordinador!\n"); 
+    
   }
   else
   {	
