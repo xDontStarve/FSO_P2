@@ -293,7 +293,8 @@ void* mou_menjacocos(void * null)
 int main(int n_args, const char *ll_args[])
 {
   /* variables locals */
-  int rc;		
+  int rc, id_win, p_win, mida_camp;
+  char a1[20],a2[20],a3[20],a4[20],a5[20],a6[20];
   pthread_t thread;
   pid_t fantasmes_id[9];
   srand(getpid());		/* inicialitza numeros aleatoris */
@@ -311,9 +312,6 @@ int main(int n_args, const char *ll_args[])
   ptr_retard = (int *)(ptr_shmem + OFFSET_RETARD);
   ptr_fantasmes = (objecte *)(ptr_shmem + OFFSET_FANTASMES);
 
-  // El puntero a la memoria compartida como argumento de 'fantasmes'
-  sprintf(str_ptr_shmem, "%ld", (long)((int *)ptr_shmem));
-
   if ((n_args != 2) && (n_args !=3))
   {	fprintf(stderr,"Comanda: %s fit_param [retard]\n", ll_args[0]);
   	exit(1);
@@ -323,50 +321,57 @@ int main(int n_args, const char *ll_args[])
   if (n_args == 3) *ptr_retard = atoi(ll_args[2]);
   else *ptr_retard = 100;
 
-  rc = win_ini(&n_fil1,&n_col,'+',INVERS);	/* intenta crear taulell */
-  if (rc > 0)		/* si aconsegueix accedir a l'entorn CURSES */
-  {
-    inicialitza_joc();
-    // Crear el hilo del comecocos
-    pthread_create(&thread, NULL, mou_menjacocos, NULL);
-    // Crear un proceso por cada fantasma
-    char a1[20];
-    for (int i = 0; i < num_fantasma; i++) 
-    {
-      sprintf(a1, "%d", i);
-      fantasmes_id[i] = fork();
-      if (!fantasmes_id[i]) {
-        execlp("./fantasma3.c", "fantasma3.c", a1, str_ptr_shmem, NULL);
-      }
+  mida_camp = win_ini(&n_fil,&n_col,'+',INVERS);
+  if (mida_camp < 0)
+  {			/* si no pot crear l'entorn de joc amb les curses */
+    switch (mida_camp)
+    {	
+      case -1: fprintf(stderr,"camp de joc ja creat!\n"); break;
+	    case -2: fprintf(stderr,"no s'ha pogut inicialitzar l'entorn de curses!\n"); break;
+	    case -3: fprintf(stderr,"les mides del camp demanades son massa grans!\n"); break;
+	    case -4: fprintf(stderr,"no s'ha pogut crear la finestra!\n"); break;
     }
-    // Esperar a que finalizen los hilos
-    int fi1 = pthread_join(thread, NULL);
-    
-    win_fi();
+    elim_mem(id_shmem);	/* elimina zona de memoria compartida */
+    exit(2);
+  }
 
-    if (fi1 < 0) 
-      printf("S'ha aturat el joc amb tecla RETURN!\n");
-    else if (fi1)
-      printf("Ha guanyat l'usuari!\n");
-    else
-      printf("Ha guanyat l'ordinador!\n"); 
-    
-  }
-  else
-  {	
-    fprintf(stderr,"Error: no s'ha pogut crear el taulell:\n");
-    switch (rc)
-    { case -1: fprintf(stderr,"camp de joc ja creat!\n");
-        break;
-      case -2: fprintf(stderr,"no s'ha pogut inicialitzar l'entorn de curses!\n");
-        break;
-      case -3: fprintf(stderr,"les mides del camp demanades son massa grans!\n");
-        break;
-      case -4: fprintf(stderr,"no s'ha pogut crear la finestra!\n");
-        break;
+  // Memoria compartida del campo de juego
+  id_win = ini_mem(mida_camp);	/* crear zona mem. compartida */
+  p_win = map_mem(id_win);	/* obtenir adres. de mem. compartida */
+  win_set(p_win,n_fil,n_col);		/* crea acces a finestra oberta */
+  // Esperar a que finalizen los hilos
+  int fi1 = pthread_join(thread, NULL);
+
+  inicialitza_joc();
+  // Crear el hilo del comecocos
+  pthread_create(&thread, NULL, mou_menjacocos, NULL);
+  
+  sprintf(a2,"%i",id_shmem);
+  sprintf(a3,"%i",id_win);
+  sprintf(a4,"%i",n_fil);
+  sprintf(a5,"%i",n_col);
+
+  // Crear un proceso por cada fantasma
+  for (int i = 0; i < num_fantasma; i++) 
+  {
+    sprintf(a1, "%d", i);
+    fantasmes_id[i] = fork();
+    if (!fantasmes_id[i]) {
+      execlp("./fantasma3.c", "fantasma3.c", a1, a2, a3, a4, a5, NULL);
     }
-    exit(6);
   }
+  
+  win_fi();
+
+  if (fi1 < 0) 
+    printf("S'ha aturat el joc amb tecla RETURN!\n");
+  else if (fi1)
+    printf("Ha guanyat l'usuari!\n");
+  else
+    printf("Ha guanyat l'ordinador!\n"); 
+    
+  
+ 
   // Eliminem la zona de memoria compartida
   elim_mem(id_shmem);
   return(0);
