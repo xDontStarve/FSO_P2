@@ -39,10 +39,9 @@ int main(int argc, char *argv[])
   do {
     objecte seg;
     objecte *fantasma = ptr_sh_fantasmes + index;
-    int k, vk, nd, vd[3];
+    int k, vk, num_directions, vd[3];
 
-    long index = atoi(*argv);
-    nd = 0;
+    num_directions = 0;
 
     for (k=-1; k<=1; k++)		/* provar direccio actual i dir. veines */
     {
@@ -56,19 +55,19 @@ int main(int argc, char *argv[])
       seg.a = win_quincar(seg.f,seg.c);
       
       if ((seg.a==' ') || (seg.a=='.') || (seg.a=='0'))
-      { vd[nd] = vk;			/* memoritza com a direccio possible */
-        nd++;
+      { vd[num_directions] = vk;			/* memoritza com a direccio possible */
+        num_directions++;
       }
     }
 
-    if (nd == 0)				/* si no pot continuar, */
+    if (num_directions == 0)				/* si no pot continuar, */
       fantasma->d = (fantasma->d + 2) % 4;	/* canvia totalment de sentit */
     else
     { 
-      if (nd == 1)			/* si nomes pot en una direccio */
+      if (num_directions == 1)			/* si nomes pot en una direccio */
         fantasma->d = vd[0];			/* li assigna aquesta */
       else				/* altrament */
-        fantasma->d = vd[rand() % nd];		/* segueix una dir. aleatoria */
+        fantasma->d = vd[rand() % num_directions];		/* segueix una dir. aleatoria */
 
       /* calcular seguent posicio final */
       seg.f = fantasma->f + df[fantasma->d];

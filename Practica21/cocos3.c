@@ -375,7 +375,6 @@ int main(int argc, const char *argv[])
   id_shmem_ipc = ini_mem(
       sizeof(int) +       // fi1
       sizeof(int) +       // fi2
-      sizeof(int) +       // retard
       9 * sizeof(objecte) // 9 'fantasmes'
   );
 
