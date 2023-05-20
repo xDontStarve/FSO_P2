@@ -87,7 +87,7 @@ typedef struct {		/* per un objecte (menjacocos o fantasma) */
 
 
 /* variables globals */
-int n_fil1, n_col;		/* dimensions del camp de joc */
+int n_fil, n_col;		/* dimensions del camp de joc */
 char tauler[70];		/* nom del fitxer amb el laberint de joc */
 char c_req;			    /* caracter de pared del laberint */
 
@@ -120,17 +120,17 @@ void carrega_parametres(const char *nom_fit)
   	exit(2);
   }
 
-  if (!feof(fit)) fscanf(fit,"%d %d %s %c\n",&n_fil1,&n_col,tauler,&c_req);
+  if (!feof(fit)) fscanf(fit,"%d %d %s %c\n",&n_fil,&n_col,tauler,&c_req);
   else {
     fprintf(stderr,"Falten parametres al fitxer \'%s\'\n",nom_fit);
     fclose(fit);
     exit(2);
 	}
-  if ((n_fil1 < MIN_FIL) || (n_fil1 > MAX_FIL) ||
+  if ((n_fil < MIN_FIL) || (n_fil > MAX_FIL) ||
 	(n_col < MIN_COL) || (n_col > MAX_COL))
   {
     fprintf(stderr,"Error: dimensions del camp de joc incorrectes:\n");
-    fprintf(stderr,"\t%d =< n_fil1 (%d) =< %d\n",MIN_FIL,n_fil1,MAX_FIL);
+    fprintf(stderr,"\t%d =< n_fil1 (%d) =< %d\n",MIN_FIL,n_fil,MAX_FIL);
     fprintf(stderr,"\t%d =< n_col (%d) =< %d\n",MIN_COL,n_col,MAX_COL);
     fclose(fit);
     exit(3);
@@ -142,12 +142,12 @@ void carrega_parametres(const char *nom_fit)
     fclose(fit);
     exit(2);
 	}
-  if ((mc.f < 1) || (mc.f > n_fil1-3) ||
+  if ((mc.f < 1) || (mc.f > n_fil-3) ||
     (mc.c < 1) || (mc.c > n_col-2) ||
     (mc.d < 0) || (mc.d > 3))
   {
     fprintf(stderr,"Error: parametres menjacocos incorrectes:\n");
-    fprintf(stderr,"\t1 =< mc.f (%d) =< n_fil1-3 (%d)\n",mc.f,(n_fil1-3));
+    fprintf(stderr,"\t1 =< mc.f (%d) =< n_fil1-3 (%d)\n",mc.f,(n_fil-3));
     fprintf(stderr,"\t1 =< mc.c (%d) =< n_col-2 (%d)\n",mc.c,(n_col-2));
     fprintf(stderr,"\t0 =< mc.d (%d) =< 3\n",mc.d);
     fclose(fit);
@@ -160,12 +160,12 @@ void carrega_parametres(const char *nom_fit)
     
     fscanf(fit,"%d %d %d %f\n",&fantasmes[num_fantasma].f,&fantasmes[num_fantasma].c,&fantasmes[num_fantasma].d,&fantasmes[num_fantasma].r);
     fprintf(stderr, "%d %d %d %f\n",fantasmes[num_fantasma].f,fantasmes[num_fantasma].c,fantasmes[num_fantasma].d,fantasmes[num_fantasma].r);
-    if ((fantasmes[num_fantasma].f < 1) || (fantasmes[num_fantasma].f > n_fil1-3) ||
+    if ((fantasmes[num_fantasma].f < 1) || (fantasmes[num_fantasma].f > n_fil-3) ||
 	      (fantasmes[num_fantasma].c < 1) || (fantasmes[num_fantasma].c > n_col-2) ||
 	      (fantasmes[num_fantasma].d < 0) || (fantasmes[num_fantasma].d > 3))
     {
 	    fprintf(stderr,"Error: parametres fantasma %d incorrectes:\n", num_fantasma);
-	    fprintf(stderr,"\t1 =< fantasmes.f (%d) =< n_fil1-3 (%d)\n",fantasmes[num_fantasma].f,(n_fil1-3));
+	    fprintf(stderr,"\t1 =< fantasmes.f (%d) =< n_fil1-3 (%d)\n",fantasmes[num_fantasma].f,(n_fil-3));
 	    fprintf(stderr,"\t1 =< fantasmes.c (%d) =< n_col-2 (%d)\n",fantasmes[num_fantasma].c,(n_col-2));
 	    fprintf(stderr,"\t0 =< fantasmes.d (%d) =< 3\n",fantasmes[num_fantasma].d);
 	    fclose(fit);
@@ -188,7 +188,7 @@ void inicialitza_joc(void)
   int r,i,j;
   char strin[12];
 
-  r = win_carregatauler(tauler,n_fil1-1,n_col,c_req);
+  r = win_carregatauler(tauler,n_fil-1,n_col,c_req);
   if (r == 0)
   {
     mc.a = win_quincar(mc.f,mc.c);
@@ -200,7 +200,7 @@ void inicialitza_joc(void)
       
       /* compta el numero total de cocos */
       cocos = 0;
-      for (i=0; i<n_fil1-1; i++)
+      for (i=0; i<n_fil-1; i++)
         for (j=0; j<n_col; j++)
           if (win_quincar(i,j)=='.') cocos++;
 
@@ -364,7 +364,7 @@ int main(int n_args, const char *ll_args[])
   if (n_args == 3) retard = atoi(ll_args[2]);
   else retard = 100;
 
-  rc = win_ini(&n_fil1,&n_col,'+',INVERS);	/* intenta crear taulell */
+  rc = win_ini(&n_fil,&n_col,'+',INVERS);	/* intenta crear taulell */
   if (rc == 0)		/* si aconsegueix accedir a l'entorn CURSES */
   {
     inicialitza_joc();

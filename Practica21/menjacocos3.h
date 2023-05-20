@@ -2,8 +2,7 @@
 
 #define OFFSET_FI1 0
 #define OFFSET_FI2 4
-#define OFFSET_RETARD 8
-#define OFFSET_FANTASMES 12
+#define OFFSET_FANTASMES 8 
 
 				/* definir estructures d'informacio */
 typedef struct {		/* per un objecte (menjacocos o fantasma) */
