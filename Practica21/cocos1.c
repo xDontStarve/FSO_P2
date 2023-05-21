@@ -1,6 +1,6 @@
 /*****************************************************************************/
 /*									                                         */
-/*				     cocos0.c				                                 */
+/*				     cocos1.c				                                 */
 /*									                                         */
 /*     Programa inicial d'exemple per a les practiques 2.1 i 2.2 de FSO.     */
 /*     Es tracta del joc del menjacocos: es dibuixa un laberint amb una      */
@@ -299,7 +299,7 @@ void* mou_fantasma(void * args)
       /* ha capturat menjacocos */
       if (fantasmes[index].a == '0') fi2 = 1;
     }
-    win_retard(2 * retard);
+    win_retard(retard * fantasmes[index].r);
   } while (!fi1 && !fi2);
 
   return(0);
@@ -342,7 +342,7 @@ void* mou_menjacocos(void * null)
         if (cocos == 0) fi1 = 1;
       }
     }
-    win_retard(retard);
+    win_retard(retard * mc.r);
   } while(!fi1 && !fi2);
   
   return(0);
@@ -380,20 +380,7 @@ int main(int n_args, const char *ll_args[])
     {
       pthread_join(threads[i], NULL);
     }
-    /*
-    do			// bucle principal del joc
-    {
-      fi1 = mou_menjacocos();
-      p++;
-      if ((p%2)==0)		// ralentitza fantasma a 2*retard
-        for (int i = 0; i < num_fantasma; i++){
-          fi2 = mou_fantasma();
-          if (fi2) break; // Si algun fantasma guanya
-        }
-        
-      win_retard(retard);
-    } while (!fi1 && !fi2);
-    */
+
     win_fi();
 
     if (fi1 == -1) printf("S'ha aturat el joc amb tecla RETURN!\n");

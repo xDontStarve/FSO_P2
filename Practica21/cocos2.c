@@ -267,7 +267,7 @@ void* mou_fantasma(void * args)
       pthread_mutex_lock(&mutex);
       seg.a = win_quincar(seg.f,seg.c);	
       pthread_mutex_unlock(&mutex);
-      
+
       if ((seg.a==' ') || (seg.a=='.') || (seg.a=='0'))
       { vd[nd] = vk;			/* memoritza com a direccio possible */
         nd++;
@@ -290,10 +290,8 @@ void* mou_fantasma(void * args)
       /* calcular caracter seguent posicio */
       pthread_mutex_lock(&mutex);
       seg.a = win_quincar(seg.f,seg.c);	
-      pthread_mutex_unlock(&mutex);
       
       /* esborra posicio anterior */
-      pthread_mutex_lock(&mutex);
       win_escricar(fantasmes[index].f,fantasmes[index].c,fantasmes[index].a,NO_INV);
 
       /* actualitza posicio */
@@ -308,7 +306,7 @@ void* mou_fantasma(void * args)
       /* ha capturat menjacocos */
       if (fantasmes[index].a == '0') fi2 = 1;
     }
-    win_retard(2 * retard);
+    win_retard(retard * fantasmes[index].r);
   } while (!fi1 && !fi2);
 
   return(0);
@@ -337,7 +335,9 @@ void* mou_menjacocos(void * null)
     }
     seg.f = mc.f + df[mc.d];	/* calcular seguent posicio */
     seg.c = mc.c + dc[mc.d];
+    pthread_mutex_lock(&mutex);
     seg.a = win_quincar(seg.f,seg.c);	/* calcular caracter seguent posicio */
+    pthread_mutex_unlock(&mutex);
     if ((seg.a == ' ') || (seg.a == '.'))
     {
       // esborra posicio anterior
@@ -355,11 +355,13 @@ void* mou_menjacocos(void * null)
       {
         cocos--;
         sprintf(strin,"Cocos: %d", cocos);
+        pthread_mutex_lock(&mutex);
         win_escristr(strin);
+        pthread_mutex_unlock(&mutex);
         if (cocos == 0) fi1 = 1;
       }
     }
-    win_retard(retard);
+    win_retard(retard * mc.r);
   } while(!fi1 && !fi2);
   
   return(0);
@@ -385,6 +387,8 @@ int main(int n_args, const char *ll_args[])
   if (rc == 0)		/* si aconsegueix accedir a l'entorn CURSES */
   {
     inicialitza_joc();
+    // Inicialitza el semafor
+    pthread_mutex_init(&mutex, NULL);
     // crear el hilo del comecocos
     pthread_create(&threads[0], NULL, mou_menjacocos, NULL);
     // crear un hilo por cada fantasma
@@ -397,25 +401,13 @@ int main(int n_args, const char *ll_args[])
     {
       pthread_join(threads[i], NULL);
     }
-    /*
-    do			// bucle principal del joc
-    {
-      fi1 = mou_menjacocos();
-      p++;
-      if ((p%2)==0)		// ralentitza fantasma a 2*retard
-        for (int i = 0; i < num_fantasma; i++){
-          fi2 = mou_fantasma();
-          if (fi2) break; // Si algun fantasma guanya
-        }
-        
-      win_retard(retard);
-    } while (!fi1 && !fi2);
-    */
     win_fi();
 
     if (fi1 == -1) printf("S'ha aturat el joc amb tecla RETURN!\n");
     else { if (fi1) printf("Ha guanyat l'usuari!\n");
 	     else printf("Ha guanyat l'ordinador!\n"); }
+
+    pthread_mutex_destroy(&mutex);
   }
   else
   {	
@@ -430,7 +422,9 @@ int main(int n_args, const char *ll_args[])
       case -4: fprintf(stderr,"no s'ha pogut crear la finestra!\n");
         break;
     }
+    
     exit(6);
   }
+  
   return(0);
 }

@@ -69,7 +69,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <sys/wait.h>   /* waitpid() */
-#include "menjacocos3.h"
+#include "menjacocos4.h"
 #include "memoria.h"
 #include "semafor.h"
 #include <stdarg.h>
@@ -275,13 +275,12 @@ void inicialitza_joc(void)
   }
 }
 
-//TODO: Make `crear_fantasma` a varargs function
 void crear_fantasma()
 {
   if (seguent_fantasma >= num_fantasmes) return;
 
   // Variables to store the arguments to 'fantasmes.c' processes
-  char a1[20], a2[20], a3[20], a4[20], a5[20], a6[20], a7[20];
+  char a1[20], a2[20], a3[20], a4[20], a5[20], a6[20], a7[20], a8[2];
 
   objecte *fantasma = ptr_sh_fantasmes + seguent_fantasma;
   // Preparing the arguments of the `fantasma` process
@@ -292,10 +291,11 @@ void crear_fantasma()
   sprintf(a5, "%i", n_col);
   sprintf(a6, "%i", retard);
   sprintf(a7, "%i", id_sem_field);
+  sprintf(a8, "%c", c_req);
   
   fantasmes_id[seguent_fantasma] = fork();
   if (fantasmes_id[seguent_fantasma] == (pid_t)0) {
-    execlp("./fantasma4", "fantasma4", a1, a2, a3, a4, a5, a6, a7, (char*)0);
+    execlp("./fantasma4", "fantasma4", a1, a2, a3, a4, a5, a6, a7, a8, (char*)0);
     fprintf(stderr, "Error: Can't execute child process `fantasma3`\n");
     exit(1);
   }
@@ -423,9 +423,10 @@ int main(int argc, const char *argv[])
 
   // Initializing IPC Shared Memory
   id_shmem_ipc = ini_mem(
-      sizeof(int) +       // fi1
-      sizeof(int) +       // fi2
-      9 * sizeof(objecte) // 9 'fantasmes'
+      sizeof(int) +         // fi1
+      sizeof(int) +         // fi2
+      9 * sizeof(int) +     // 9 `busties`
+      9 * sizeof(objecte)   // 9 `fantasmes`
   );
 
   // Mapping the shared memory

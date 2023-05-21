@@ -16,8 +16,8 @@ fantasma3 : fantasma3.c menjacocos3.h winsuport2.o winsuport2.h memoria.o memori
 cocos4 : cocos4.c menjacocos4.h winsuport2.o winsuport2.h memoria.o memoria.h semafor.o semafor.h
 	gcc -g -Wall cocos4.c winsuport2.o memoria.o semafor.o -o cocos4 -lcurses -lpthread
 
-fantasma4 : fantasma3.c menjacocos4.h winsuport2.o winsuport2.h memoria.o memoria.h semafor.o semafor.h
-	gcc -g -Wall fantasma4.c winsuport2.o memoria.o semafor.o -o fantasma4 -lcurses -lpthread
+fantasma4 : fantasma3.c menjacocos4.h winsuport2.o winsuport2.h memoria.o memoria.h semafor.o semafor.h missatge.o missatge.h
+	gcc -g -Wall fantasma4.c winsuport2.o memoria.o semafor.o missatge.o -o fantasma4 -lcurses -lpthread -lm
 
 run: fantasma4 cocos4
 	./cocos4 joc34.txt 250
