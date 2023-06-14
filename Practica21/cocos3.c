@@ -1,6 +1,6 @@
 /*****************************************************************************/
 /*									                                         */
-/*				     cocos2.c				                                 */
+/*				     cocos3.c				                                 */
 /*									                                         */
 /*     Programa inicial d'exemple per a les practiques 2.1 i 2.2 de FSO.     */
 /*     Es tracta del joc del menjacocos: es dibuixa un laberint amb una      */
@@ -413,7 +413,8 @@ int main(int argc, const char *argv[])
       fprintf(stderr, "no s'ha pogut crear la finestra!\n");
       break;
     }
-    elim_mem(id_shmem_ipc); /* elimina zona de memoria compartida */
+    /* elimina zona de memoria compartida del camp de joc*/
+    elim_mem(id_shmem_ipc);
     exit(2);
   }
 

@@ -16,7 +16,7 @@ int index_fantasma;
 
 void * handle_messages(void * args) {
   char * message;
-  int size_message = receiveM(*(ptr_sh_busties + index_fantasma), &message);
+  receiveM(*(ptr_sh_busties + index_fantasma), &message);
 
   
   return (void *) 1;

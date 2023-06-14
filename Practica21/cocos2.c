@@ -249,14 +249,15 @@ void inicialitza_joc(void)
 /* captura al menjacocos, 0 altrament					*/
 void* mou_fantasma(void * args)
 {
+  objecte seg;
+  int k, vk, nd, vd[3];
+  long index = (long) args;
   do {
-    objecte seg;
-    int k, vk, nd, vd[3];
-    long index = (long) args;
+    
     nd = 0;
-
     for (k=-1; k<=1; k++)		/* provar direccio actual i dir. veines */
     {
+      pthread_mutex_lock(&mutex);
       vk = (fantasmes[index].d + k) % 4;		/* direccio veïna */
       if (vk < 0) vk += 4;		/* corregeix negatius */
       
@@ -264,47 +265,45 @@ void* mou_fantasma(void * args)
       seg.c = fantasmes[index].c + dc[vk];
 
       /* calcular caracter seguent posicio */
-      pthread_mutex_lock(&mutex);
       seg.a = win_quincar(seg.f,seg.c);	
       pthread_mutex_unlock(&mutex);
-
       if ((seg.a==' ') || (seg.a=='.') || (seg.a=='0'))
       { vd[nd] = vk;			/* memoritza com a direccio possible */
         nd++;
       }
     }
 
-    if (nd == 0)				/* si no pot continuar, */
+    if (nd == 0){				/* si no pot continuar, */
       fantasmes[index].d = (fantasmes[index].d + 2) % 4;		/* canvia totalment de sentit */
-    else
+    }else
     { 
+      pthread_mutex_lock(&mutex);
       if (nd == 1)			/* si nomes pot en una direccio */
         fantasmes[index].d = vd[0];			/* li assigna aquesta */
       else				/* altrament */
         fantasmes[index].d = vd[rand() % nd];		/* segueix una dir. aleatoria */
-
       /* calcular seguent posicio final */
       seg.f = fantasmes[index].f + df[fantasmes[index].d];
       seg.c = fantasmes[index].c + dc[fantasmes[index].d];
 
       /* calcular caracter seguent posicio */
-      pthread_mutex_lock(&mutex);
       seg.a = win_quincar(seg.f,seg.c);	
       
       /* esborra posicio anterior */
       win_escricar(fantasmes[index].f,fantasmes[index].c,fantasmes[index].a,NO_INV);
-
+      //pthread_mutex_unlock(&mutex);
       /* actualitza posicio */
       fantasmes[index].f = seg.f;
       fantasmes[index].c = seg.c;
       fantasmes[index].a = seg.a;
 
       /* redibuixa fantasma */
+      //pthread_mutex_lock(&mutex);
       win_escricar(fantasmes[index].f,fantasmes[index].c,'1'+index,NO_INV);
-      pthread_mutex_unlock(&mutex);
 
       /* ha capturat menjacocos */
       if (fantasmes[index].a == '0') fi2 = 1;
+      pthread_mutex_unlock(&mutex);
     }
     win_retard(retard * fantasmes[index].r);
   } while (!fi1 && !fi2);
@@ -321,8 +320,9 @@ void* mou_menjacocos(void * null)
     char strin[12];
     objecte seg;
     int tec;
-    
+    pthread_mutex_lock(&mutex);
     tec = win_gettec();
+    pthread_mutex_unlock(&mutex);
     if (tec != 0){
       switch (tec)		/* modificar direccio menjacocos segons tecla */
       {
